@@ -44,6 +44,7 @@ vector<string> split_string(const string& input) {
 };
 
 list<Order> buy_orders;
+//add padding here to have books on different cache lines
 list<Order> sell_orders;
 bool nodebug = false;
 void print_ob(bool print = false) {
@@ -69,6 +70,7 @@ void print_ob(bool print = false) {
     cout2 << endl << endl;
     checkthisstring += cout2.str();
 };
+
 void insert_buy(Order& order) {
     if (buy_orders.empty()) {
         buy_orders.push_front(order);
@@ -80,7 +82,15 @@ void insert_buy(Order& order) {
         buy_orders.insert(found, order);
     }
 }
+//implement iceberg
+// fix fok implementation to be faster
+// 
 
+//implement different matching algo
+//fifo
+//pro rata price*quantity
+//top if there is someone with quantity >= of all quantity for given price level he gets filled first(if he his req has the same price)
+//lead market maker = vip programme - no matter where in the queue your order is if the price match you will get x % of current sell/buy offer at given price to fill your order
 void insert_sell(Order& order) {
     if (sell_orders.empty()) {
         sell_orders.push_front(order);
@@ -104,9 +114,13 @@ auto find_order_buy_book(string& orderid) {
         });
 }
 void cancel_order(string& orderid) {
+    auto size = sell_orders.size();
     sell_orders.remove_if([&orderid](auto& e) {
         return e.orderid == orderid;
         });
+    if (size != sell_orders.size()) {
+        return;
+    }
     buy_orders.remove_if([&orderid](auto& e) {
         return e.orderid == orderid;
         });
@@ -868,9 +882,17 @@ int main() {
     for (auto& line : lines) {
     //for (string line; getline(cin, line);) {
         process(line);
+        if (line[0] == 'E') {
+            break;
+        }
+
     }
 
     cout << "TERA TO=====\n\n" << checkthisstring << "\n\n";
+    string expected_string = checkthisstring;
+    if (expected_string != checkthisstring) {
+        cout << "BAD";
+    }
     
     //return 0;
 }
